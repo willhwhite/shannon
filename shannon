@@ -210,9 +210,6 @@ cmd_start() {
     export ANTHROPIC_AUTH_TOKEN="shannon-router-key"
   fi
 
-  # Resolve Claude config dir for OAuth token hot-reload (used as docker-compose volume source)
-  export CLAUDE_CONFIG_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
-
   # Ensure audit-logs directory exists with write permissions for container user (UID 1001)
   mkdir -p ./audit-logs
   chmod 777 ./audit-logs

@@ -35,7 +35,6 @@ services:
       - ${OUTPUT_DIR:-./audit-logs}:/app/output
       - ./repos:/repos
       - ${BENCHMARKS_BASE:-.}:/benchmarks
-      - ${CLAUDE_CONFIG_DIR}:/app/.claude:ro
     shm_size: 2gb
     ipc: host
     security_opt:

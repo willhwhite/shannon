@@ -23,34 +23,7 @@
 import { NativeConnection, Worker, bundleWorkflowCode } from '@temporalio/worker';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { readFile } from 'node:fs/promises';
-import dotenv from 'dotenv';
 import * as activities from './activities.js';
-
-dotenv.config();
-
-const CREDENTIALS_PATH = '/app/.claude/.credentials.json';
-const TOKEN_POLL_INTERVAL_MS = 60_000;
-
-async function refreshOAuthToken(): Promise<void> {
-  try {
-    const raw = await readFile(CREDENTIALS_PATH, 'utf-8');
-    const creds = JSON.parse(raw) as { claudeAiOauth?: { accessToken?: string } };
-    const token = creds.claudeAiOauth?.accessToken;
-    if (token && token !== process.env.CLAUDE_CODE_OAUTH_TOKEN) {
-      process.env.CLAUDE_CODE_OAUTH_TOKEN = token;
-      console.log('OAuth token refreshed from credentials file');
-    }
-  } catch {
-    // File missing or temporarily unreadable — keep using existing token
-  }
-}
-
-function startCredentialsWatcher(): void {
-  void refreshOAuthToken();
-  setInterval(() => void refreshOAuthToken(), TOKEN_POLL_INTERVAL_MS);
-  console.log('OAuth token watcher started (60s poll interval)');
-}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -83,8 +56,6 @@ async function runWorker(): Promise<void> {
 
   process.on('SIGINT', shutdown);
   process.on('SIGTERM', shutdown);
-
-  startCredentialsWatcher();
 
   console.log('Shannon worker started');
   console.log('Task queue: shannon-pipeline');
