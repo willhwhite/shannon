@@ -51,6 +51,7 @@ Options for 'start':
   CONFIG=<path>          Configuration file (YAML)
   OUTPUT=<path>          Output directory for reports (default: ./audit-logs/)
   WORKSPACE=<name>       Named workspace (auto-resumes if exists, creates if new)
+  FOCUS=<types>          Comma-separated vuln types to run (injection,xss,auth,ssrf,authz)
   PIPELINE_TESTING=true  Use minimal prompts for fast testing
   ROUTER=true            Route requests through claude-code-router (multi-model support)
 
@@ -83,6 +84,7 @@ parse_args() {
       PIPELINE_TESTING=*) PIPELINE_TESTING="${arg#PIPELINE_TESTING=}" ;;
       REBUILD=*) REBUILD="${arg#REBUILD=}" ;;
       ROUTER=*) ROUTER="${arg#ROUTER=}" ;;
+      FOCUS=*) FOCUS="${arg#FOCUS=}" ;;
       WORKSPACE=*) WORKSPACE="${arg#WORKSPACE=}" ;;
     esac
   done
@@ -208,6 +210,9 @@ cmd_start() {
     export ANTHROPIC_AUTH_TOKEN="shannon-router-key"
   fi
 
+  # Resolve Claude config dir for OAuth token hot-reload (used as docker-compose volume source)
+  export CLAUDE_CONFIG_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
+
   # Ensure audit-logs directory exists with write permissions for container user (UID 1001)
   mkdir -p ./audit-logs
   chmod 777 ./audit-logs
@@ -232,6 +237,7 @@ cmd_start() {
   fi
 
   [ "$PIPELINE_TESTING" = "true" ] && ARGS="$ARGS --pipeline-testing"
+  [ -n "$FOCUS" ] && ARGS="$ARGS --focus $FOCUS"
   [ -n "$WORKSPACE" ] && ARGS="$ARGS --workspace $WORKSPACE"
 
   # Run the client to submit workflow

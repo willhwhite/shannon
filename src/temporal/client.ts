@@ -128,6 +128,7 @@ function showUsage(): void {
   console.log('Options:');
   console.log('  --config <path>       Configuration file path');
   console.log('  --output <path>       Output directory for audit logs');
+  console.log('  --focus <types>       Comma-separated vuln types (injection,xss,auth,ssrf,authz)');
   console.log('  --pipeline-testing    Use minimal prompts for fast testing');
   console.log('  --workspace <name>    Resume from existing workspace');
   console.log(
@@ -153,6 +154,7 @@ interface CliArgs {
   customWorkflowId?: string;
   waitForCompletion: boolean;
   resumeFromWorkspace?: string;
+  focusVulnTypes?: string[];
 }
 
 function parseCliArgs(argv: string[]): CliArgs {
@@ -170,6 +172,7 @@ function parseCliArgs(argv: string[]): CliArgs {
   let customWorkflowId: string | undefined;
   let waitForCompletion = false;
   let resumeFromWorkspace: string | undefined;
+  let focusVulnTypes: string[] | undefined;
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -195,6 +198,12 @@ function parseCliArgs(argv: string[]): CliArgs {
       const nextArg = argv[i + 1];
       if (nextArg && !nextArg.startsWith('-')) {
         customWorkflowId = nextArg;
+        i++;
+      }
+    } else if (arg === '--focus') {
+      const nextArg = argv[i + 1];
+      if (nextArg && !nextArg.startsWith('-')) {
+        focusVulnTypes = nextArg.split(',').map(s => s.trim().toLowerCase());
         i++;
       }
     } else if (arg === '--pipeline-testing') {
@@ -229,6 +238,7 @@ function parseCliArgs(argv: string[]): CliArgs {
     ...(displayOutputPath && { displayOutputPath }),
     ...(customWorkflowId && { customWorkflowId }),
     ...(resumeFromWorkspace && { resumeFromWorkspace }),
+    ...(focusVulnTypes && { focusVulnTypes }),
   };
 }
 
@@ -344,6 +354,7 @@ function buildPipelineInput(
     ...(workspace.isResume && args.resumeFromWorkspace && { resumeFromWorkspace: args.resumeFromWorkspace }),
     ...(workspace.terminatedWorkflows.length > 0 && { terminatedWorkflows: workspace.terminatedWorkflows }),
     ...(Object.keys(pipelineConfig).length > 0 && { pipelineConfig }),
+    ...(args.focusVulnTypes && { focusVulnTypes: args.focusVulnTypes }),
   };
 }
 
@@ -363,6 +374,9 @@ function displayWorkflowInfo(args: CliArgs, workspace: WorkspaceResolution): voi
   }
   if (args.displayOutputPath) {
     console.log(`  Output:     ${args.displayOutputPath}`);
+  }
+  if (args.focusVulnTypes) {
+    console.log(`  Focus:      ${args.focusVulnTypes.join(', ')}`);
   }
   if (args.pipelineTestingMode) {
     console.log(`  Mode:       Pipeline Testing`);

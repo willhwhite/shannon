@@ -15,6 +15,7 @@ export interface PipelineInput {
   sessionId?: string; // Workspace directory name (distinct from workflowId for named workspaces)
   resumeFromWorkspace?: string; // Workspace name to resume from
   terminatedWorkflows?: string[]; // Workflows terminated during resume
+  focusVulnTypes?: string[]; // Filter to only run these vuln→exploit pipelines (e.g. ['xss', 'auth'])
 }
 
 export interface ResumeState {

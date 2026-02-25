@@ -429,7 +429,11 @@ export async function pentestPipelineWorkflow(
 
     const maxConcurrent = input.pipelineConfig?.max_concurrent_pipelines ?? 5;
 
-    const pipelineConfigs = buildPipelineConfigs();
+    const allPipelineConfigs = buildPipelineConfigs();
+    const focusFilter = input.focusVulnTypes;
+    const pipelineConfigs = focusFilter && focusFilter.length > 0
+      ? allPipelineConfigs.filter(c => focusFilter.includes(c.vulnType))
+      : allPipelineConfigs;
     const pipelineThunks: Array<() => Promise<VulnExploitPipelineResult>> = [];
 
     for (const config of pipelineConfigs) {
