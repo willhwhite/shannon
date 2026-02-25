@@ -23,7 +23,10 @@
 import { NativeConnection, Worker, bundleWorkflowCode } from '@temporalio/worker';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import dotenv from 'dotenv';
 import * as activities from './activities.js';
+
+dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
